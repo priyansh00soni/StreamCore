@@ -1,0 +1,27 @@
+import express from 'express'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
+
+const app=express() 
+
+
+//app.use(cors()) // doing this much allows all the frontends to access your backend. 
+// app.use() = apply middleware
+// Middleware runs on every request
+app.use(cors({
+    origin:process.env.CORS_ORIGIN,
+    credentials:true
+}))
+
+// These app.use() calls define global middleware that process every incoming request in sequence. Each middleware conditionally acts on the request (e.g., parsing JSON, serving static files, reading cookies) before passing control to the next middleware or route handler.
+
+app.use(express.json({limit: "16kb"}))  // This middleware lets your server read JSON data sent in the request body. If request contains JSON, parse it and give me a JS object.
+
+app.use(express.urlencoded({extended:true,limit:"16kb"})) //If request comes from a form, convert it into usable JS object.
+
+app.use(express.static("public")) //if asked by get, If file exists in public, just send it.
+
+app.use(cookieParser()) //Reads cookies from incoming requests. Cookies are a way for the backend to remember a user between requests. Since HTTP is stateless (every request is independent), cookies help maintain things like login sessions, preferences, etc.
+ 
+
+export default app
