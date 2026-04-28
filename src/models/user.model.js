@@ -31,7 +31,7 @@ const userSchema= new Schema({
     },
     watchHistory:[  // this will be an array that stores the id of the videos that were watched. 
     {
-        type: mongoose.Schema.Types.objectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref:"Video"
     }
     ],
@@ -44,7 +44,7 @@ const userSchema= new Schema({
     },
 },{timestamps:true})
 
-userSchema.pre("save",async function(next){ // don't use arrow fn here as they don't have their own this.
+userSchema.pre("save",async function(next){ // don't use arrow fn here as they don't have their own this keyword.
     if(!this.isModified("password")) return next()  
     this.password= await bcrypt.hash(this.password,10)
     next()
