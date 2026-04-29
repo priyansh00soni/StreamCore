@@ -7,3 +7,4 @@ class Apiresponse{// does the same work as Api Error, but for response. ApiRespo
         // success = false
     }
 }
+export default ApiResponse
