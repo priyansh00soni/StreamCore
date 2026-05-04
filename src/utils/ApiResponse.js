@@ -1,4 +1,4 @@
-class Apiresponse{// does the same work as Api Error, but for response. ApiResponse standardizes successful API outputs with status, data, message, and auto-derived success flag.
+class ApiResponse{// does the same work as Api Error, but for response. ApiResponse standardizes successful API outputs with status, data, message, and auto-derived success flag.
     constructor(statusCode, data, message="Success"){
         this.statusCode=statusCode
         this.data=data

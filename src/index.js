@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
-dotenv.config({ path: "./.env" });
+// import dotenv from "dotenv";
+// dotenv.config({ path: "./.env" }); --not req as we wrote in nodeman, package.json
 import mongoose from 'mongoose'
 import { DB_NAME } from './constants.js';
 import app from './app.js'

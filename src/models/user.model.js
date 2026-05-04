@@ -44,10 +44,9 @@ const userSchema= new Schema({
     },
 },{timestamps:true})
 
-userSchema.pre("save",async function(next){ // don't use arrow fn here as they don't have their own this keyword.
-    if(!this.isModified("password")) return next()  
+userSchema.pre("save",async function(){ // don't use arrow fn here as they don't have their own this keyword.
+    if(!this.isModified("password")) return
     this.password= await bcrypt.hash(this.password,10)
-    next()
 })
 //Even though you don’t see a class, Mongoose internally treats schemas like blueprints for objects (documents).So we have to use this here.
 
@@ -71,6 +70,7 @@ userSchema.methods.generateAccessToken=function(){
     }
     )
 }
+
 //A refresh token is a long-lived token used to generate a new access token when the original access token expires. It allows users to stay logged in without repeatedly entering credentials while maintaining security by keeping access tokens short-lived.
 
 userSchema.methods.generateRefreshToken=function(){
