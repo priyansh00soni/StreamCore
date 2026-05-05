@@ -127,9 +127,9 @@ const loginUser=asyncHandler(async (req, res)=>{
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
-    const options={ //cookies can be modified with anyone using frontend, this disables so that can be done only by backend.
-        httpOnly: true,
-        secure:true
+    const options={ //`httpOnly: true` means JavaScript cannot read OR modify the cookie. Only the browser sends it automatically with requests. Frontend JS has zero access.
+        httpOnly: true, //prevents JavaScript from reading the cookie. XSS attack can't steal it.
+        secure:true //cookie only sent over HTTPS. Not plain HTTP.
     }
 
     return res.status(200)
@@ -145,4 +145,24 @@ const loginUser=asyncHandler(async (req, res)=>{
 
 })
 
-export default {registerUser, loginUser}
+const logoutUser=asyncHandler(async(req,res)=>{
+    User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set:{
+                    refreshToken:undefined
+                }
+            },
+            {new:true //returns updated user (we dont need it afterwards, just a good habit)
+            })
+    const options={
+        httpOnly:true,
+        secure:true
+    }
+    return res.status(200)
+    .clearCookie("accessToken",options)
+    .clearCookie("refreshToken",options)
+    .json(new ApiResponse(200,{},"User Logged Out "))
+})
+
+export {registerUser, loginUser, logoutUser}
