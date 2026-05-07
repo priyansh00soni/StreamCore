@@ -4,6 +4,7 @@ import {User} from  '../models/user.model.js'
 import uploadOnCloudinary from '../utils/cloudinary.js'
 import ApiResponse from '../utils/ApiResponse.js'
 import jwt from 'jsonwebtoken'
+import { deleteFromCloudinary } from '../utils/deleteFromCloudinary.js'
 
 const generateAccessandRefreshTokens = async(userId)=>{ // readability is topmost priority.
     try {
@@ -239,6 +240,11 @@ const updateUserAvatar= asyncHandler(async(req,res)=>{
     if(!avatarLocalPath) throw new ApiError(400, "Avatar is required")
     const avatar= await uploadOnCloudinary(avatarLocalPath)
     if(!avatar) throw new ApiError(400, "Ever while uploading")
+    // let avatarPublicId = avatar.split('/')
+    // avatarPublicId = avatarPublicId.at(-1).split('.')
+    // avatarPublicId= avatarPublicId[0]  or simply: 
+    const avatarPublicId = req.user.avatar.split('/').at(-1).split('.')[0]
+    if(! await deleteFromCloudinary(avatarPublicId)) throw new ApiError(400,"Avatar deletion failed.")
     const user=await User.findByIdAndUpdate(req.user._id,{
         $set:{
                 avatar:avatar.url
@@ -254,6 +260,8 @@ const updateUserCoverImage= asyncHandler(async(req,res)=>{
     if(!coverImageLocalPath) throw new ApiError(400, "coverImage is required")
     const coverImage= await uploadOnCloudinary(coverImageLocalPath)
     if(!coverImage) throw new ApiError(400, "Ever while uploading")
+         const coverImagePublicId = req.user.coverImage.split('/').at(-1).split('.')[0]
+    if(! await deleteFromCloudinary(coverImagePublicId)) throw new ApiError(400,"Cover Image deletion failed.")
     const user=await User.findByIdAndUpdate(req.user._id,{
         $set:{
                 coverImage:coverImage.url
