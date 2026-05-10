@@ -5,6 +5,7 @@ import uploadOnCloudinary from '../utils/cloudinary.js'
 import ApiResponse from '../utils/ApiResponse.js'
 import jwt from 'jsonwebtoken'
 import { deleteFromCloudinary } from '../utils/deleteFromCloudinary.js'
+import mongoose from 'mongoose'
 
 const generateAccessandRefreshTokens = async(userId)=>{ // readability is topmost priority.
     try {
@@ -13,7 +14,7 @@ const generateAccessandRefreshTokens = async(userId)=>{ // readability is topmos
         const refreshToken = user.generateRefreshToken()
 
         user.refreshToken = refreshToken
-
+        await user.save({ validateBeforeSave: false })
 
         return {accessToken,refreshToken}
     } catch (error) {
@@ -174,7 +175,7 @@ const refreshAccessToken=asyncHandler(async(req,res)=>{
         const user= await User.findById(decodedToken?._id)
 
         if(!user) throw new ApiError(401,"Invalid Refresh Token")
-
+        
         if(incomingRefreshToken !== user?.refreshToken){
             throw new ApiError(401,"Refresh Token is expired or used")    
         }
@@ -334,38 +335,39 @@ const getChannelProfile = asyncHandler(async(req,res)=>{
 const getWatchHistory = asyncHandler(async(req, res)=>{
     const user = await User.aggregate([
         {
-            $match:{
+            $match: {
                 _id: new mongoose.Types.ObjectId(req.user._id)
             }
         },
         {
-            $lookup:{
-                from:"videos",
-                localField:"watchHistory",
-                foreignField:"_id",
-                as:"watchHistory",
-                pipeline:[
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [
                     {
-                        $lookup:{
-                            from:"users",
-                            localField:"owner",
-                            foreignField:"_id",
-                            as:"owner",
-                            pipeline:[
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
                                 {
-                                    $project:{
-                                        fullName:1,
-                                        avatar:1,
-                                        username:1,
+                                    $project: {
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1
                                     }
-                                },
-                                { //for frontend ki mada we do ext step. we could have giiven a new name but we gave it as owner only. So that it gets overwritten.
-                                    owner:{
-                                        $first:"$owner"
-                                    }
-
                                 }
                             ]
+                        }
+                    },
+                    {
+                        $addFields:{
+                            owner:{
+                                $first: "$owner"
+                            }
                         }
                     }
                 ]
