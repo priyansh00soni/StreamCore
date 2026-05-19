@@ -325,6 +325,7 @@ const getChannelProfile = asyncHandler(async(req,res)=>{
             }
         }
     ])
+    
     console.log(channel); //curiosity
     if(!channel.length) throw new ApiError(400,"Channel Dosen't Exist") 
     return res.status(200).json(
@@ -333,7 +334,7 @@ const getChannelProfile = asyncHandler(async(req,res)=>{
 })
 
 const getWatchHistory = asyncHandler(async(req, res)=>{
-    const user = await User.aggregate([
+     const user = await User.aggregate([
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(req.user._id)
@@ -391,3 +392,7 @@ export {registerUser,
         updateUserCoverImage,
         getChannelProfile,
         getWatchHistory}
+
+
+
+        
