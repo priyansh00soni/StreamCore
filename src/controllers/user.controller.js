@@ -22,7 +22,6 @@ const generateAccessandRefreshTokens = async(userId)=>{ // readability is topmos
     }
 }
 
-
 const registerUser= asyncHandler(async (req, res)=>{
     // get user details from frontend as reference to userModel.
     // Validation  - not empty
@@ -240,7 +239,7 @@ const updateUserAvatar= asyncHandler(async(req,res)=>{
     const avatarLocalPath = req.file?.path
     if(!avatarLocalPath) throw new ApiError(400, "Avatar is required")
     const avatar= await uploadOnCloudinary(avatarLocalPath)
-    if(!avatar) throw new ApiError(400, "Ever while uploading")
+    if(!avatar) throw new ApiError(400, "Error while uploading")
     // let avatarPublicId = avatar.split('/')
     // avatarPublicId = avatarPublicId.at(-1).split('.')
     // avatarPublicId= avatarPublicId[0]  or simply: 
