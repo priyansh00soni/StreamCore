@@ -1,9 +1,11 @@
-import mongoose from "mongoose";
+import mongoose,{ isValidObjectId } from "mongoose";
 import { Video } from "../models/videos.model.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
+import { User } from "../models/user.model.js";
+import { deleteFromCloudinary } from "../utils/deleteFromCloudinary.js";
 
 const getAllVideos = asyncHandler(async(req,res)=>{
     const {page = 1, limit = 10, query="", sortBy="createdAt", sortType="desc", userId} = req.query
@@ -91,6 +93,95 @@ const publishAVideo = asyncHandler(async(req, res)=>{
     )
 })
 
+const getVideoById = asyncHandler(async(req, res)=>{ //returns ONE specific video with FULL details — description, full video URL, view count, likes, complete owner profile. Also increments view count.
+    const {videoId} = req.params
+    if(!isValidObjectId(videoId)) throw new ApiError(400,"Invalid Video Id")
+    
+    let video = await Video.findByIdAndUpdate(videoId,{
+        $inc: { views: 1 }
+    })
+
+    if(!video) throw new ApiError(401,"Video Not found")  
+
+    video= await Video.aggregate([
+        {
+            $match: {_id: new mongoose.Types.ObjectId(videoId)}
+        },
+        {
+            $lookup:{
+                from:"users",
+                localField:"owner",
+                foreignField:"_id",
+                as:"owner"
+            }
+        },
+        {
+            $addFields:{
+                owner:{
+                    $first:"$owner"
+                }
+            }
+        },
+        {
+            $project:{
+                "owner.fullName":1,
+                "owner.username":1,
+                "owner.avatar":1,
+                "owner.coverImage":1,
+                title: 1,
+                description: 1,
+                videoFile: 1,
+                thumbnail: 1,
+                views: 1,
+                duration: 1
+            }
+        }
+    ])
 
 
-export {getAllVideos,publishAVideo}
+    if(!video[0]) throw new ApiError(401,"Video Not found")  
+
+    return res.status(200).json(new ApiResponse(200,video[0],"Video Fetched Successfully"))
+})
+
+const updateVideo = asyncHandler(async (req, res) => {  
+    const { videoId } = req.params
+    if(!isValidObjectId(videoId)) throw new ApiError(400,"Invalid Video Id")
+
+    const {title,description} = req.body
+
+    const updatedDetails={}
+    if(title) updatedDetails.title=title
+    if(description) updatedDetails.description=description
+
+    const thumbnailLocalPath = req.file?.path
+    if(thumbnailLocalPath){
+        const vid= await Video.findById(videoId)
+        if(!vid) throw new ApiError(400,"Video not found.") 
+
+        const thumbnail =await uploadOnCloudinary(thumbnailLocalPath)
+        if(!thumbnail) throw new ApiError(400,"Thumbnail Upload Failed.")
+
+        const thumbnailPublicId = vid.thumbnail.split('/').at(-1).split('.')[0]
+        if(! await deleteFromCloudinary(thumbnailPublicId)) throw new ApiError(400,"Thumbnail deletion failed.")
+
+        updatedDetails.thumbnail=thumbnail.url
+    }
+    
+    if(Object.keys(updatedDetails).length === 0) throw new ApiError(400,"Update atleast one parameter.")
+
+    const video = await Video.findByIdAndUpdate(
+        {_id:videoId,owner:req.user._id},
+        {$set: updatedDetails},
+        {new:true,runValidators:true} //new: true: By default, Mongoose returns the original document before the update was applied. Setting this to true tells Mongoose to return the modified, updated document instead.runValidators: true: Mongoose's built-in validation (e.g., required, min, max, enum) is designed for .save() and .create() operations. Update operations like findOneAndUpdate() skip this validation by default. Setting this flag to true forces Mongoose to run your schema's validators on the updated fields
+    )
+
+    if(!video) throw new ApiError(400,"Video not found")
+
+    return res.status(200).json(new ApiResponse(200,video,"Video details Updated Successfully."))
+
+})
+
+
+
+export {getAllVideos,publishAVideo,getVideoById,updateVideo}
