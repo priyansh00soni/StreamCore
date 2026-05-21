@@ -170,7 +170,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     
     if(Object.keys(updatedDetails).length === 0) throw new ApiError(400,"Update atleast one parameter.")
 
-    const video = await Video.findByIdAndUpdate(
+    const video = await Video.findOneAndUpdate( //not findByIdAndUpdate
         {_id:videoId,owner:req.user._id},
         {$set: updatedDetails},
         {new:true,runValidators:true} //new: true: By default, Mongoose returns the original document before the update was applied. Setting this to true tells Mongoose to return the modified, updated document instead.runValidators: true: Mongoose's built-in validation (e.g., required, min, max, enum) is designed for .save() and .create() operations. Update operations like findOneAndUpdate() skip this validation by default. Setting this flag to true forces Mongoose to run your schema's validators on the updated fields
@@ -182,6 +182,33 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 })
 
+const deleteVideo = asyncHandler(async(req, res)=>{
+    const {videoId} = req.params
+    if(!isValidObjectId(videoId)) throw new ApiError(400,"Invalid Video Id")
 
+    const video=await Video.findById(videoId)
+    const videoPath=video.videoFile
+    const thumbnail=video.thumbnail
 
-export {getAllVideos,publishAVideo,getVideoById,updateVideo}
+    const deletedVideo= await Video.findOneAndDelete({_id:videoId,owner:req.user._id})
+    if(!deletedVideo) throw new ApiError(401,"Unauthorized.")
+    
+    if(! await deleteFromCloudinary(videoPath)) throw new ApiError(400,"Unable to delete the Video.")
+    if(! await deleteFromCloudinary(thumbnail)) throw new ApiError(400,"Unable to delete the Thumbnail.")
+    
+    return res.status(200).json(new ApiResponse(200,"Video Deleted Successfully."))
+})
+
+const togglePublishStatus = asyncHandler(async(req, res)=>{
+    const {videoId} = req.params
+    if(!isValidObjectId(videoId)) throw new ApiError(400,"Invalid Video ID")
+    const video = await Video.findById(videoId)
+    if(!video) throw new ApiError(400,"Video Not Found.")
+    if(req.user._id.toString()!==video.owner.toString()) throw new ApiError(401,"This video dosen't belong to current loggedIn user.")
+
+    video.isPublished = !video.isPublished
+    await video.save()
+    return res.status(200).json(new ApiResponse(200,video,"Publish Status Flipped."))
+})
+
+export {getAllVideos,publishAVideo,getVideoById,updateVideo,deleteVideo,togglePublishStatus}
