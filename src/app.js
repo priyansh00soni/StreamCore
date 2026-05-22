@@ -28,7 +28,7 @@ app.use(cookieParser()) //Reads cookies from incoming requests. Cookies are a wa
 import userRouter from './routes/user.routes.js'
 import videoRouter from './routes/videos.routes.js'
 import tweetRouter from './routes/tweets.routes.js'
-import subscriptionRouter from './routes/tweets.routes.js'
+import subscriptionRouter from './routes/subscription.routes.js'
 
 //routes declaration
 // app.get - not applicable here. You can use app.get(), app.post(), etc. directly in app.js. But then every single route in your entire backend has to live in app.js.

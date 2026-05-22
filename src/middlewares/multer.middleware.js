@@ -5,7 +5,9 @@ const storage = multer.diskStorage({
     cb(null, "./public/temp")
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname)
+    // replace spaces with underscores
+        const sanitized = file.originalname.replace(/\s+/g, '_')
+    cb(null, sanitized)
   }
 })
 
