@@ -27,10 +27,12 @@ app.use(cookieParser()) //Reads cookies from incoming requests. Cookies are a wa
 //routes
 import userRouter from './routes/user.routes.js'
 import videoRouter from './routes/videos.routes.js'
+import tweetRouter from './routes/tweets.routes.js'
 
 //routes declaration
 // app.get - not applicable here. You can use app.get(), app.post(), etc. directly in app.js. But then every single route in your entire backend has to live in app.js.
 app.use("/api/v1/users",userRouter) //http://localhost:8000/api/v1/users/
 app.use("/api/v1/videos",videoRouter) 
+app.use("/api/v1/tweets",tweetRouter) 
 
 export default app
