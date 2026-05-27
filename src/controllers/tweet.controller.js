@@ -31,9 +31,9 @@ const updateTweet = asyncHandler(async(req,res)=>{
     const {content} = req.body
     if(!content) throw new ApiError(400,"content is empty.")
     const tweet = await Tweet.findOneAndUpdate(
-    {owner:req.user._id,_id:tweetId},
-    {$set:{content}},
-    {new:true,runValidators:true}
+        {owner:req.user._id,_id:tweetId},
+        {$set:{content}},
+        {new:true,runValidators:true}
     )
     if(!tweet) throw new ApiError(500,"Something went wrong while updating the tweet")
     return res.status(200).json(new ApiResponse(200,tweet,"Tweet Updated Successfully."))
