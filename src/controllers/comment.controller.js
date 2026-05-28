@@ -1,4 +1,4 @@
-import { connect, isValidObjectId } from "mongoose"
+import mongoose, { connect, isValidObjectId } from "mongoose" 
 import asyncHandler from "../utils/asyncHandler.js"
 import ApiError from "../utils/ApiError.js"
 import { Comment } from "../models/comment.model.js"
@@ -31,6 +31,17 @@ const getVideoComments = asyncHandler(async (req, res) => {
             }
         },
         {
+            $project:{
+                content:1,
+                video:1,
+                "owner._id":1,
+                "owner.fullName":1,
+                "owner.username":1,
+                "owner.avatar":1,
+                "owner.avatar":1,
+            }
+        },
+        {
              $skip: (pageNumber - 1) * limitNumber
         },
         { $limit: Number(limit) }
@@ -60,7 +71,7 @@ const updateComment = asyncHandler(async (req, res) => {
     const { content } = req.body;
     if(!isValidObjectId(commentId)) throw new ApiError(400,"Id not valid.")
     if(!content) throw new ApiError(400,"Content is required.")
-    const updatedComment = await Comment.findByOneAndUpdate(
+    const updatedComment = await Comment.findOneAndUpdate(
         {owner:req.user._id,_id:commentId},
         {$set:{content}},
         {new:true,runValidators:true}
