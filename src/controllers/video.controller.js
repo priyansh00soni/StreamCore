@@ -187,14 +187,15 @@ const deleteVideo = asyncHandler(async(req, res)=>{
     if(!isValidObjectId(videoId)) throw new ApiError(400,"Invalid Video Id")
 
     const video=await Video.findById(videoId)
-    const videoPath=video.videoFile
-    const thumbnail=video.thumbnail
+
+    const videoPublicId = video.videoFile.split('/').at(-1).split('.')[0]
+    const thumbnailPublicId = video.thumbnail.split('/').at(-1).split('.')[0]
 
     const deletedVideo= await Video.findOneAndDelete({_id:videoId,owner:req.user._id})
     if(!deletedVideo) throw new ApiError(401,"Unauthorized.")
     
-    if(! await deleteFromCloudinary(videoPath)) throw new ApiError(400,"Unable to delete the Video.")
-    if(! await deleteFromCloudinary(thumbnail)) throw new ApiError(400,"Unable to delete the Thumbnail.")
+    if(! await deleteFromCloudinary(videoPublicId)) throw new ApiError(400,"Unable to delete the Video.")
+    if(! await deleteFromCloudinary(thumbnailPublicId)) throw new ApiError(400,"Unable to delete the Thumbnail.")
     
     return res.status(200).json(new ApiResponse(200,"Video Deleted Successfully."))
 })
