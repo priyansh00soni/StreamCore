@@ -20,7 +20,7 @@ const getUserTweets = asyncHandler(async(req,res)=>{
     if(!isValidObjectId(userId)) throw new ApiError(400,"id is not valid.")
     const tweets = await Tweet.find({owner:userId}).sort({createdAt:-1})
 
-    if(!tweets.length) throw new ApiError(500,"Something went wrong while fetching tweets.")
+    if(!tweets.length) throw new ApiError(404,"Tweets not found.")
 
     return res.status(200).json(new ApiResponse(200,tweets,"Tweets fetched Successfully."))
 })

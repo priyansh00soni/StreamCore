@@ -187,6 +187,7 @@ const deleteVideo = asyncHandler(async(req, res)=>{
     if(!isValidObjectId(videoId)) throw new ApiError(400,"Invalid Video Id")
 
     const video=await Video.findById(videoId)
+    if(!video) throw new ApiError(404, "Video not found.")
 
     const videoPublicId = video.videoFile.split('/').at(-1).split('.')[0]
     const thumbnailPublicId = video.thumbnail.split('/').at(-1).split('.')[0]

@@ -16,9 +16,12 @@ router.route('/publish').post(verifyJWT,upload.fields([
     }
 ]),publishAVideo)
 
-router.route('/:videoId').get(getVideoById)
-router.route('/updateVideo/:videoId').patch(verifyJWT,upload.single("thumbnail"),updateVideo)
-router.route('/delete/:videoId').delete(verifyJWT,deleteVideo)
-router.route('/togglePublish/:videoId').patch(verifyJWT,togglePublishStatus)
+router.route('/:videoId')
+    .get(getVideoById)
+    .patch(verifyJWT, upload.single("thumbnail"), updateVideo)
+    .delete(verifyJWT, deleteVideo)
+
+router.route('/toggle-publish/:videoId')
+    .patch(verifyJWT, togglePublishStatus)
 
 export default router
