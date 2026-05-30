@@ -42,6 +42,7 @@ import likeRouter from './routes/like.routes.js'
 import commentRouter from './routes/comment.routes.js'
 import dashboardRouter from './routes/dashboard.routes.js'
 import healthcheckRouter from './routes/healthCheck.routes.js'
+import AIRouter from './routes/ai.routes.js'
 
 //routes declaration
 // app.get - not applicable here. You can use app.get(), app.post(), etc. directly in app.js. But then every single route in your entire backend has to live in app.js.
@@ -54,5 +55,6 @@ app.use('/api/v1/likes', likeRouter)
 app.use('/api/v1/comments', commentRouter)
 app.use('/api/v1/dashboard', dashboardRouter)
 app.use('/api/v1/healthcheck', healthcheckRouter)
+app.use('/api/v1/ai', AIRouter)
 
 export default app

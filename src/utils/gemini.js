@@ -1,0 +1,19 @@
+import { GoogleGenAI } from "@google/genai";
+import ApiError from "./ApiError.js";
+const ai = new GoogleGenAI(process.env.GEMINI_API_KEY)
+
+const generateWithAI = async(prompt)=>{
+    try {
+        const res = await ai.models.generateContent({
+            model: "gemini-2.5-flash-lite",
+            contents: prompt
+        })
+        
+        return res.text
+    } catch (error) {
+        if(error.status==429) throw new ApiError(429, "AI service is busy. Please try again in a few seconds.")
+        throw new ApiError(500,"Something went wrong.")
+    }
+}
+
+export default generateWithAI
