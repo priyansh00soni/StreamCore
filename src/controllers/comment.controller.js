@@ -3,6 +3,8 @@ import asyncHandler from '../utils/asyncHandler.js'
 import ApiError from '../utils/ApiError.js'
 import { Comment } from '../models/comment.model.js'
 import ApiResponse from '../utils/ApiResponse.js'
+import { isContentModerated } from '../utils/aiService.js'
+
 
 const getVideoComments = asyncHandler(async (req, res) => {
     const { videoId } = req.params
@@ -58,6 +60,9 @@ const addComment = asyncHandler(async (req, res) => {
     if (!isValidObjectId(videoId)) throw new ApiError(400, 'Id not valid.')
     const { content } = req.body
     if (!content) throw new ApiError(400, 'Content is Required.')
+
+    if(!await isContentModerated(content)) throw new ApiError(400,"Your comment dosen't follow our comment moderation standards. Please write a new comment.")
+
     const comment = await Comment.create({
         content,
         video: videoId,

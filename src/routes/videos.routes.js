@@ -1,7 +1,7 @@
 import { Router } from 'express'
 const router = Router()
 import { upload } from '../middlewares/multer.middleware.js'
-import { verifyJWT } from '../middlewares/auth.middleware.js'
+import { optionalVerifyJWT, verifyJWT } from '../middlewares/auth.middleware.js'
 import {
     deleteVideo,
     getAllVideos,
@@ -29,7 +29,7 @@ router.route('/publish').post(
 
 router
     .route('/:videoId')
-    .get(getVideoById)
+    .get(optionalVerifyJWT, getVideoById)
     .patch(verifyJWT, upload.single('thumbnail'), updateVideo)
     .delete(verifyJWT, deleteVideo)
 

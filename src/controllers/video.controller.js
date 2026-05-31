@@ -148,6 +148,16 @@ const getVideoById = asyncHandler(async (req, res) => {
 
     if (!video[0]) throw new ApiError(401, 'Video Not found')
 
+    if(req.user){
+        console.log("User ID:", req.user._id)
+        console.log("Video ID:", videoId)
+        const updatedWatchList = await User.findByIdAndUpdate(req.user._id,{
+        $addToSet:{watchHistory: videoId}
+    }) 
+    
+    if(!updatedWatchList) throw new ApiError(500,"Something went wrong while updating the watchList.")
+
+    }
     return res
         .status(200)
         .json(new ApiResponse(200, video[0], 'Video Fetched Successfully'))

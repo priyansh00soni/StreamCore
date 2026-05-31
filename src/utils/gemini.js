@@ -16,4 +16,5 @@ const generateWithAI = async(prompt)=>{
     }
 }
 
+
 export default generateWithAI

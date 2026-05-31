@@ -3,19 +3,20 @@ import { Tweet } from '../models/tweet.model.js'
 import ApiError from '../utils/ApiError.js'
 import ApiResponse from '../utils/ApiResponse.js'
 import asyncHandler from '../utils/asyncHandler.js'
+import { isContentModerated } from '../utils/aiService.js'
 
 const createTweet = asyncHandler(async (req, res) => {
     const { content } = req.body
     if (!content) throw new ApiError(400, 'Tweet content Required.')
+
+    if(!await isContentModerated(content)) throw new ApiError(400,"Your Tweet dosen't follow our Tweet moderation standards. Please write a new Tweet.")
+
     const tweet = await Tweet.create({
         content,
         owner: req.user._id,
     })
-    if (!tweet)
-        throw new ApiError(500, 'Somwthing went wrong while creating Tweet.')
-    return res
-        .status(201)
-        .json(new ApiResponse(201, tweet, 'Tweet created successfully.'))
+    if (!tweet) throw new ApiError(500, 'Somwthing went wrong while creating Tweet.')
+    return res.status(201).json(new ApiResponse(201, tweet, 'Tweet created successfully.'))
 })
 
 const getUserTweets = asyncHandler(async (req, res) => {
