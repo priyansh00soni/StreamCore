@@ -6,6 +6,7 @@ import ApiResponse from '../utils/ApiResponse.js'
 import uploadOnCloudinary from '../utils/cloudinary.js'
 import { User } from '../models/user.model.js'
 import { deleteFromCloudinary } from '../utils/deleteFromCloudinary.js'
+import { semanticSearch } from '../utils/aiService.js'
 
 const getAllVideos = asyncHandler(async (req, res) => {
     const {
@@ -16,9 +17,24 @@ const getAllVideos = asyncHandler(async (req, res) => {
         sortType = 'desc',
         userId,
     } = req.query
-    let matchConditions = {}
+    let matchConditions = {} 
 
-    if (query) matchConditions.title = { $regex: query, $options: 'i' } //$regex means: match any title that CONTAINS this pattern anywhere inside it. So { title: { $regex: "java" } } returns every video whose title has "java" anywhere in it. $options: "i" means case insensitive. So "Java", "JAVA", "java" all match. Without this option "Java" and "java" would be treated as different things.
+    console.log(query);
+    
+    let optimizedQuery 
+    if(query) optimizedQuery =  await semanticSearch(query) 
+    else optimizedQuery = query
+    
+    console.log(optimizedQuery);
+
+    if(optimizedQuery){
+    const regexPattern = optimizedQuery.trim().split(" ").join("|")
+    matchConditions.$or = [
+        { title: { $regex: regexPattern, $options: 'i' } },
+        { description: { $regex: regexPattern, $options: 'i' } }
+    ]
+}
+    //$regex means: match any title that CONTAINS this pattern anywhere inside it. So { title: { $regex: "java" } } returns every video whose title has "java" anywhere in it. $options: "i" means case insensitive. So "Java", "JAVA", "java" all match. Without this option "Java" and "java" would be treated as different things.
 
     if (userId) matchConditions.owner = new mongoose.Types.ObjectId(userId)
     //MongoDB compares a string against an ObjectId. They are different data types. Even if the value looks the same, the types do not match. MongoDB returns nothing.So you need to convert that string into a proper ObjectId before using it in a query. That is what mongoose.Types.ObjectId(userId) does. It takes the string and converts it into the ObjectId type that MongoDB understands and can compare correctly.

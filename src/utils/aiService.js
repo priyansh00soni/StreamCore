@@ -8,4 +8,11 @@ const isContentModerated = async(content)=>{
     return isValid
 }
 
-export {isContentModerated}
+const semanticSearch = async(query)=>{
+    const result = await generateWithAI(`You are a YouTube search query optimizer. Convert the following vague user query into relevant search keywords separated by spaces that can be used to find related videos. Return only the keywords, nothing else. Query: "${query}"`)
+
+    if(!result) throw new ApiError(500, "Something went wrong.")
+    return result
+}
+
+export {isContentModerated,semanticSearch}
