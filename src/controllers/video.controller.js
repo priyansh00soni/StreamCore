@@ -6,7 +6,7 @@ import ApiResponse from '../utils/ApiResponse.js'
 import uploadOnCloudinary from '../utils/cloudinary.js'
 import { User } from '../models/user.model.js'
 import { deleteFromCloudinary } from '../utils/deleteFromCloudinary.js'
-import { semanticSearch } from '../utils/aiService.js'
+import { generateTags, semanticSearch } from '../utils/aiService.js'
 
 const getAllVideos = asyncHandler(async (req, res) => {
     const {
@@ -98,6 +98,9 @@ const publishAVideo = asyncHandler(async (req, res) => {
     const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
     if (!thumbnail) throw new ApiError(400, 'Error while uploading thumbnail.')
 
+    const tagsString = await generateTags(title, description)
+    const tags = tagsString.split(",").map(tag => tag.trim())
+
     const video = await Video.create({
         title,
         description,
@@ -105,6 +108,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
         thumbnail: thumbnail.url,
         duration: videoFile.duration,
         owner: req.user?._id,
+        tags
     })
 
     const uploadedVideo = await Video.findById(video._id)
