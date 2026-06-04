@@ -90,19 +90,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
                             owner: {
                                 $first: "$owner",
                             },
-                            $cond: query ? {} :
-                            matchedTagsCount:{
-                                $size: {
-                                    $setIntersection: [
-                                    {
-                                        $cond: {
-                                        if: { $isArray: "$tags" },
-                                        then: "$tags",
-                                        else: []
-                                        }
-                                    }, tags]
+                            ...(query ? {} :{
+                                matchedTagsCount:{
+                                    $size:{
+                                        $setIntersection:[
+                                            {
+                                                $cond:{
+                                                    if:{$isArray: "$tags"},
+                                                    then: "$tags",
+                                                    else: []
+                                                }
+                                            },tags]
+                                    }
                                 }
-                            }
+                            })
                         }
                     },
                     {
