@@ -18,23 +18,41 @@ const getAllVideos = asyncHandler(async (req, res) => {
         userId,
     } = req.query
     let matchConditions = {} 
-
-    console.log(query);
     
     let optimizedQuery 
     if(query) optimizedQuery =  await semanticSearch(query) 
     else optimizedQuery = query
     
-    console.log(optimizedQuery);
+    console.log("Original:", query, "→ Semantic:", optimizedQuery)
 
     if(optimizedQuery){
-    const regexPattern = optimizedQuery.trim().split(" ").join("|")
+    const terms = optimizedQuery.trim().split(" ").filter(Boolean).map(t => t.replace(/_/g, " "))
+    const escapedTerms = terms.map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')); //["apple.", "pears?"] ==>> ["apple\.", "pears\?"]
+    const regexPattern = escapedTerms.map(t => `\\b${t}\\b`).join("|")
     matchConditions.$or = [
         { title: { $regex: regexPattern, $options: 'i' } },
-        { description: { $regex: regexPattern, $options: 'i' } }
+        { description: { $regex: regexPattern, $options: 'i' } }, 
+        { tags: { $elemMatch: { $regex: regexPattern, $options: 'i' } } }
     ]
 }
     //$regex means: match any title that CONTAINS this pattern anywhere inside it. So { title: { $regex: "java" } } returns every video whose title has "java" anywhere in it. $options: "i" means case insensitive. So "Java", "JAVA", "java" all match. Without this option "Java" and "java" would be treated as different things.
+
+
+    //Recommendations
+    
+    let tags=[]
+
+    if(req.user && !query && req.user.watchHistory.length>0){
+        const recentHistory = req.user.watchHistory.slice(-100)
+        const recentVideosTags = await Video.find({ _id: { $in: recentHistory } }).select("tags")
+        tags = recentVideosTags.flatMap(video=>video.tags)
+
+        matchConditions.tags={$in:tags}
+        matchConditions._id = {$nin:recentHistory}
+
+
+    }
+
 
     if (userId) matchConditions.owner = new mongoose.Types.ObjectId(userId)
     //MongoDB compares a string against an ObjectId. They are different data types. Even if the value looks the same, the types do not match. MongoDB returns nothing.So you need to convert that string into a proper ObjectId before using it in a query. That is what mongoose.Types.ObjectId(userId) does. It takes the string and converts it into the ObjectId type that MongoDB understands and can compare correctly.
@@ -43,42 +61,76 @@ const getAllVideos = asyncHandler(async (req, res) => {
     const pageNumber = Number(page)
     const limitNumber = Number(limit)
 
-    const videos = await Video.aggregate([
+   const videos = await Video.aggregate([
         {
-            $match: matchConditions,
+          $match: matchConditions,
         },
         {
-            $lookup: {
-                from: 'users',
-                localField: 'owner',
-                foreignField: '_id',
-                as: 'owner',
-                pipeline: [
+            $facet: {
+                data: [
                     {
-                        $project: {
-                            fullName: 1,
-                            avatar: 1,
-                            username: 1,
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                            {
+                                $project: {
+                                fullName: 1,
+                                avatar: 1,
+                                username: 1,
+                                },
+                            },
+                            ],
                         },
                     },
+                    {
+                        $addFields: {
+                            owner: {
+                                $first: "$owner",
+                            },
+                            $cond: query ? {} :
+                            matchedTagsCount:{
+                                $size: {
+                                    $setIntersection: [
+                                    {
+                                        $cond: {
+                                        if: { $isArray: "$tags" },
+                                        then: "$tags",
+                                        else: []
+                                        }
+                                    }, tags]
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $sort: query
+                            ? { [sortBy]: sortTypeOrder }
+                            : { matchedTagsCount: -1 },
+                    },
+                    { $skip: (pageNumber - 1) * limitNumber },
+                    { $limit: limitNumber },
                 ],
-            },
-        },
-        {
-            $addFields: {
-                owner: {
-                    $first: '$owner',
-                },
-            },
-        },
-        { $sort: { [sortBy]: sortTypeOrder } },
-        { $skip: (pageNumber - 1) * limitNumber },
-        { $limit: Number(limit) },
-    ])
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, videos, 'Videos Fetched Successfully'))
+                totalCount: [{ $count: "total" }],
+            },
+        }
+])
+
+    let hasNextPage = false
+
+    if(!videos[0].data.length) throw new ApiError(404,"Videos Not found")
+
+    if(videos[0]?.totalCount[0]?.total > pageNumber * limitNumber) hasNextPage=true
+
+    return res.status(200).json(new ApiResponse(200, {
+    videos: videos[0].data,
+    totalCount: videos[0]?.totalCount[0]?.total,
+    hasNextPage,
+    }, 'Videos Fetched Successfully'))
+
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -169,8 +221,6 @@ const getVideoById = asyncHandler(async (req, res) => {
     if (!video[0]) throw new ApiError(401, 'Video Not found')
 
     if(req.user){
-        console.log("User ID:", req.user._id)
-        console.log("Video ID:", videoId)
         const updatedWatchList = await User.findByIdAndUpdate(req.user._id,{
         $addToSet:{watchHistory: videoId}
     }) 
