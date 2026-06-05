@@ -2,6 +2,7 @@ import express from 'express'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 
+
 const app = express() //In Express.js, const app = express() is the command used to initialize an Express application instance. It creates an object, typically named app, which contains the entire framework API and serves as the foundation for building your web server.
 
 //app.use(cors()) // doing this much allows all the frontends to access your backend.
@@ -32,6 +33,29 @@ app.use((err, req, res, next) => {
 // asyncHandler calls next(error) when something throws. next comes from Express itself — it's automatically provided to every middleware and route handler.
 // When you call next(error) — Express sees an error was passed, skips all normal middleware, and looks for an error handling middleware — a special middleware with 4 parameters: (err, req, res, next).
 
+import rateLimit from 'express-rate-limit'
+
+const generalRateLimiter= rateLimit({
+    windowMs: 15*60*1000,
+    max:200,
+    standardHeaders:true,
+    legacyHeaders:false,
+    message: { message: 'Too many requests, please try again later.' }
+})
+
+const aiRateLimiter= rateLimit({
+    windowMs: 60*1000,
+    max:5,
+    message: { message: 'AI service rate limit reached. Please wait a moment.' }
+})
+
+const authRateLimiter= rateLimit({
+    windowMs: 60*1000,
+    max:10,
+    message: { message: 'Too many attempts, please try again later.' }
+})
+
+
 //routes
 import userRouter from './routes/user.routes.js'
 import videoRouter from './routes/videos.routes.js'
@@ -44,8 +68,11 @@ import dashboardRouter from './routes/dashboard.routes.js'
 import healthcheckRouter from './routes/healthCheck.routes.js'
 import AIRouter from './routes/ai.routes.js'
 
+
 //routes declaration
 // app.get - not applicable here. You can use app.get(), app.post(), etc. directly in app.js. But then every single route in your entire backend has to live in app.js.
+app.use(generalLimiter)
+app.use('/api/v1/users/login', authRateLimiter)
 app.use('/api/v1/users', userRouter) //http://localhost:8000/api/v1/users/
 app.use('/api/v1/videos', videoRouter)
 app.use('/api/v1/tweets', tweetRouter)
@@ -55,6 +82,7 @@ app.use('/api/v1/likes', likeRouter)
 app.use('/api/v1/comments', commentRouter)
 app.use('/api/v1/dashboard', dashboardRouter)
 app.use('/api/v1/healthcheck', healthcheckRouter)
-app.use('/api/v1/ai', AIRouter)
+app.use('/api/v1/ai',aiRateLimiter, AIRouter)
 
 export default app
+

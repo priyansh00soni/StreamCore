@@ -22,8 +22,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
     let optimizedQuery 
     if(query) optimizedQuery =  await semanticSearch(query) 
     else optimizedQuery = query
-    
-    console.log("Original:", query, "→ Semantic:", optimizedQuery)
 
     if(optimizedQuery){
     const terms = optimizedQuery.trim().split(" ").filter(Boolean).map(t => t.replace(/_/g, " "))
@@ -53,7 +51,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
     }
 
-
+    matchConditions.isPublished = true
     if (userId) matchConditions.owner = new mongoose.Types.ObjectId(userId)
     //MongoDB compares a string against an ObjectId. They are different data types. Even if the value looks the same, the types do not match. MongoDB returns nothing.So you need to convert that string into a proper ObjectId before using it in a query. That is what mongoose.Types.ObjectId(userId) does. It takes the string and converts it into the ObjectId type that MongoDB understands and can compare correctly.
 
