@@ -25,13 +25,6 @@ app.use(express.static('public')) //if asked by get, If file exists in public, j
 
 app.use(cookieParser()) //Reads cookies from incoming requests. Cookies are a way for the backend to remember a user between requests. Since HTTP is stateless (every request is independent), cookies help maintain things like login sessions, preferences, etc.
 
-app.use((err, req, res, next) => {
-    res.status(err.statusCode || 500).json({
-        message: err.message,
-    })
-})
-// asyncHandler calls next(error) when something throws. next comes from Express itself — it's automatically provided to every middleware and route handler.
-// When you call next(error) — Express sees an error was passed, skips all normal middleware, and looks for an error handling middleware — a special middleware with 4 parameters: (err, req, res, next).
 
 import rateLimit from 'express-rate-limit'
 
@@ -83,6 +76,16 @@ app.use('/api/v1/comments', commentRouter)
 app.use('/api/v1/dashboard', dashboardRouter)
 app.use('/api/v1/healthcheck', healthcheckRouter)
 app.use('/api/v1/ai',aiRateLimiter, AIRouter)
+
+
+app.use((err, req, res, next) => {
+    res.status(err.statusCode || 500).json({
+        message: err.message,
+    })
+})
+// asyncHandler calls next(error) when something throws. next comes from Express itself — it's automatically provided to every middleware and route handler.
+// When you call next(error) — Express sees an error was passed, skips all normal middleware, and looks for an error handling middleware — a special middleware with 4 parameters: (err, req, res, next).
+
 
 export default app
 
