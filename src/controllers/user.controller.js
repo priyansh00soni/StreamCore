@@ -6,6 +6,7 @@ import ApiResponse from '../utils/ApiResponse.js'
 import jwt from 'jsonwebtoken'
 import { deleteFromCloudinary } from '../utils/deleteFromCloudinary.js'
 import mongoose from 'mongoose'
+import validatePasswordStrength from '../utils/validatePasswordStrength.js'
 
 const generateAccessandRefreshTokens = async (userId) => {
     // readability is topmost priority.
@@ -50,6 +51,10 @@ const registerUser = asyncHandler(async (req, res) => {
     ) {
         throw new ApiError(400, 'All Fields are required')
     }
+
+    const isStrong = validatePasswordStrength(password)
+    if(isStrong!=true) throw new ApiError(400,isStrong)
+
 
     //Check for duplicacy
     //User.findOne({username}) // but we want to check for both email and username, so we will do:
@@ -227,6 +232,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword } = req.body
+    const isStrong = validatePasswordStrength(password)
+    if(isStrong!=true) throw new ApiError(400,isStrong)
     const user = await User.findById(req.user._id)
     if (!(await user.isPasswordCorrect(oldPassword)))
         throw new ApiError(401, 'Wrong Current Password')
