@@ -64,7 +64,7 @@ import AIRouter from './routes/ai.routes.js'
 
 //routes declaration
 // app.get - not applicable here. You can use app.get(), app.post(), etc. directly in app.js. But then every single route in your entire backend has to live in app.js.
-app.use(generalLimiter)
+app.use(generalRateLimiter)
 app.use('/api/v1/users/login', authRateLimiter)
 app.use('/api/v1/users', userRouter) //http://localhost:8000/api/v1/users/
 app.use('/api/v1/videos', videoRouter)
