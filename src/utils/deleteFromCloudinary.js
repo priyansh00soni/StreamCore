@@ -11,7 +11,7 @@ export const deleteFromCloudinary = async (cloudinaryLink) => {
     try {
         if (!cloudinaryLink) return null
         const response = await cloudinary.uploader.destroy(cloudinaryLink, {
-            resource_type: 'image',
+            resource_type: 'auto',
         })
         console.log('File is uploaded on cloudinary.', response.url)
         return response
