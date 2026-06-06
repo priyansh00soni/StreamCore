@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import ApiError from "./ApiError.js";
-const ai = new GoogleGenAI(process.env.GEMINI_API_KEY)
+const ai = new GoogleGenAI({})
 
 const generateWithAI = async(prompt)=>{
     try {
