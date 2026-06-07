@@ -381,8 +381,6 @@ const getChannelProfile = asyncHandler(async (req, res) => {
             },
         },
     ])
-
-    console.log(channel) //curiosity
     if (!channel.length) throw new ApiError(400, "Channel Dosen't Exist")
     return res
         .status(200)
