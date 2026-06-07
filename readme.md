@@ -478,40 +478,6 @@ All responses follow this envelope:
 
 ---
 
-## 🧠 Design Decisions
-
-These are the "why" decisions behind this codebase : the kind of questions interviewers ask.
-
-### Why dual-token JWT (access + refresh)?
-
-Access tokens are **stateless** : any server instance verifies them without a DB call, enabling horizontal scaling. But stateless means they can't be revoked mid-life. The solution: short-lived access tokens (1 day) + long-lived refresh tokens (10 days) **stored in MongoDB**. The DB storage enables server-side revocation : logout deletes the refresh token. Stealing the access token only grants 1 day of access max. This is a deliberate hybrid: stateless performance + stateful revocation capability.
-
-### Why store media URLs in MongoDB instead of files?
-
-MongoDB documents have a 16MB size limit. Binary files in documents kill query performance. The right pattern: store files on Cloudinary (a CDN built for media), store only the URL string in MongoDB. The CDN handles delivery, caching, and global edge distribution : things MongoDB is not designed for.
-
-### Why MongoDB Aggregation instead of `populate()`?
-
-`populate()` makes separate queries per document (N+1 problem). Aggregation pipelines execute entirely inside MongoDB : joins (`$lookup`), filtering (`$match`), computed fields (`$addFields`), and pagination (`$facet`) all in a **single DB round trip**. For `getChannelProfile`, this means one pipeline that joins subscribers, computes count, and checks if the requesting user is subscribed : instead of 3+ sequential queries.
-
-### Why is the Subscription model self-referential?
-
-Both `subscriber` and `channel` reference the `User` collection : because YouTube users are simultaneously viewers and creators. The `Subscription` collection is a junction table modeling a many-to-many relationship on a single collection. This avoids unbounded arrays inside User documents (a popular channel with 10M subscribers would otherwise have a 10M-element array in a single document).
-
-### Why is the Like model polymorphic?
-
-One `likes` collection handles likes on videos, comments, and tweets using optional foreign key fields. Alternative: three separate collections (`VideoLike`, `CommentLike`, `TweetLike`). The polymorphic approach reduces schema proliferation. The tradeoff: no DB-level constraint enforcing "exactly one content type per like document" : that's enforced by application logic.
-
-### Why AI moderation before save (not async)?
-
-The current implementation is synchronous : it ensures no toxic comment ever reaches the database. The tradeoff is latency and a Gemini API dependency. A production system would use async moderation: save the comment immediately with `status: 'pending'`, moderate asynchronously via a queue, then auto-delete if it fails. This was a conscious scope decision for this project.
-
-### Why `asyncHandler`?
-
-Express doesn't catch errors thrown inside async route handlers by default (Express 4). `asyncHandler` is a higher-order function that wraps handlers in `Promise.resolve().catch(next)` : forwarding any rejection to the global error middleware. This eliminates try/catch boilerplate in every controller. Note: Express 5 (which this project uses) handles this natively, but `asyncHandler` is kept for explicit documentation and Express 4 compatibility.
-
----
-
 ## 🔒 Security
 
 | Measure | Implementation |
@@ -539,23 +505,6 @@ Express doesn't catch errors thrown inside async route handlers by default (Expr
 | AI | @google/genai (Gemini) | v2.7.0 | Content moderation + semantic features |
 | Rate limiting | express-rate-limit | v8.5.2 | Brute force + abuse prevention |
 | Pagination | mongoose-aggregate-paginate-v2 | v1.1.4 | Cursor-based pagination on aggregates |
-
----
-
-## 🚀 What I'd Add Before Production
-
-These are known improvements for 1M+ user scale:
-
-- [ ] **Video transcoding pipeline** : BullMQ + FFmpeg workers for 1080p/720p/480p HLS output
-- [ ] **Redis caching** : Cache channel profiles, subscriber counts, trending videos
-- [ ] **Async comment moderation** : Queue-based moderation, don't block comment save
-- [ ] **Distributed rate limiting** : Redis store for `express-rate-limit` (current: in-memory, per-instance)
-- [ ] **Full-text search index** : MongoDB text index on `title` and `tags` fields
-- [ ] **Structured logging** : Winston/Pino with log levels + request IDs (replace console.log)
-- [ ] **Test suite** : Jest + Supertest integration tests for all API routes
-- [ ] **Docker + docker-compose** : Containerized local dev with MongoDB + Redis
-- [ ] **CI/CD pipeline** : GitHub Actions: lint → test → build → deploy on push to main
-- [ ] **API documentation** : Swagger/OpenAPI spec auto-generated from routes
 
 ---
 
