@@ -133,6 +133,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
+    if (!req.user?._id) throw new ApiError(401, 'Unauthorized request')
     const { title, description } = req.body
     if (!title) throw new ApiError(400, 'Title required')
     if (!description) throw new ApiError(400, 'Description required')
@@ -157,8 +158,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
         description,
         videoFile: videoFile.url,
         thumbnail: thumbnail.url,
-        duration: videoFile.duration,
-        owner: req.user?._id,
+        duration: videoFile.duration || 0,
+        owner: req.user._id,
         tags
     })
 
