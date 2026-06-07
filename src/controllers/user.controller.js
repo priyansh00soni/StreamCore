@@ -79,7 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const avatar = await uploadOnCloudinary(avatarLocalPath)
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
-    if (!avatar) throw new ApiError(400, 'Error while uploading') //properly upload hui hai ya nai
+    if (!avatar) throw new ApiError(400, 'Error while uploading avatar') //properly upload hui hai ya nai
 
     //create object and upload on db
 
@@ -281,7 +281,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path
     if (!avatarLocalPath) throw new ApiError(400, 'Avatar is required')
     const avatar = await uploadOnCloudinary(avatarLocalPath)
-    if (!avatar) throw new ApiError(400, 'Error while uploading')
+    if (!avatar) throw new ApiError(400, 'Error while uploading avatar')
     // let avatarPublicId = avatar.split('/')
     // avatarPublicId = avatarPublicId.at(-1).split('.')
     // avatarPublicId= avatarPublicId[0]  or simply:
