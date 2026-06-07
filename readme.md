@@ -10,7 +10,7 @@
 
 # 🎬 StreamCore API
 
-### A production-grade YouTube-like backend, built from scratch with Node.js, MongoDB, and Gemini AI.
+### A production-grade YouTube-like backend — built from scratch with Node.js, MongoDB, and Gemini AI.
 
 [Features](#-features) · [Architecture](#-architecture) · [API Reference](#-api-reference) · [Quick Start](#-quick-start) · [Design Decisions](#-design-decisions) · [Live API](https://stream-core.onrender.com/api/v1/healthcheck)
 
@@ -56,29 +56,29 @@ This isn't a tutorial clone. It's built with production patterns:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                          CLIENT                                 │
-│              (Browser / Mobile / Postman)                       │
+│                          CLIENT                                  │
+│              (Browser / Mobile / Postman)                        │
 └───────────────────────────┬─────────────────────────────────────┘
                             │ HTTPS
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      EXPRESS SERVER                             │
-│                                                                 │
+│                      EXPRESS SERVER                              │
+│                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                  MIDDLEWARE CHAIN                        │   │
+│  │                  MIDDLEWARE CHAIN                         │   │
 │  │  Rate Limiter → CORS → Body Parser → Cookie Parser       │   │
 │  └──────────────────────────────────────────────────────────┘   │
-│                            │                                    │
+│                            │                                     │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                    ROUTER LAYER                          │   │
+│  │                    ROUTER LAYER                           │   │
 │  │  /users  /videos  /comments  /likes  /subscriptions      │   │
-│  │  /playlists  /dashboard  /ai  /tweets  /healthcheck      │   │
+│  │  /playlists  /dashboard  /ai  /tweets  /healthcheck       │   │
 │  └──────────────────────────────────────────────────────────┘   │
-│                            │                                    │
-│  ┌──────────┐  ┌───────────┴──────────┐  ┌──────────────────┐   │
-│  │ verifyJWT│  │    CONTROLLERS       │  │  multer (upload) │   │
-│  │middleware│  │  Business Logic      │  │  middleware      │   │
-│  └──────────┘  └──────────┬───────────┘  └──────────────────┘   │
+│                            │                                     │
+│  ┌──────────┐  ┌───────────┴──────────┐  ┌──────────────────┐  │
+│  │  verifyJWT│  │    CONTROLLERS       │  │  multer (upload) │  │
+│  │middleware │  │  Business Logic      │  │  middleware       │  │
+│  └──────────┘  └──────────┬───────────┘  └──────────────────┘  │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
            ┌───────────────┼────────────────┐
@@ -110,9 +110,9 @@ Incoming Request
       └─► [5] cookieParser()          (parses req.cookies)
                     │
          ┌──────────┴──────────┐
-         │  Route-level MW     │
-         │  verifyJWT          │  → decodes JWT → attaches req.user
-         │  multer.upload()    │  → saves file to /public/temp
+         │  Route-level MW      │
+         │  verifyJWT           │  → decodes JWT → attaches req.user
+         │  multer.upload()     │  → saves file to /public/temp
          └──────────┬──────────┘
                     │
              Controller
@@ -126,41 +126,63 @@ Incoming Request
 
 ### Authentication Flow
 
-```
-REGISTER
-  POST /register ──► validate ──► hash password (bcrypt) ──► upload avatar
-                ──► User.create() ──► 201 Created
+**Register**
 
-LOGIN
-  POST /login ──► find user ──► bcrypt.compare() ──► generate tokens
-             ──► save refreshToken to DB
-             ──► set httpOnly cookies (accessToken + refreshToken)
-             ──► return JSON { user, accessToken, refreshToken }
+| Step | Action |
+|------|--------|
+| 1 | Validate fields + password strength |
+| 2 | Upload avatar to Cloudinary |
+| 3 | Hash password with bcrypt (10 rounds) |
+| 4 | Save user to MongoDB |
+| 5 | Return `201 Created` |
 
-AUTHENTICATED REQUEST
-  req.cookies.accessToken ──► jwt.verify() ──► User.findById()
-                          ──► req.user = user (no password/refreshToken)
-                          ──► controller runs
+**Login**
 
-TOKEN REFRESH
-  POST /refresh-token ──► jwt.verify(refreshToken)
-                      ──► compare with DB stored token (rotation check)
-                      ──► generate new pair ──► update DB ──► new cookies
+| Step | Action |
+|------|--------|
+| 1 | Find user by username or email |
+| 2 | Verify password with `bcrypt.compare()` |
+| 3 | Generate access token (1d) + refresh token (10d) |
+| 4 | Store refresh token in MongoDB |
+| 5 | Set both tokens as `httpOnly` + `Secure` cookies |
+| 6 | Return user object + tokens in response body |
 
-LOGOUT
-  POST /logout ──► $unset refreshToken from DB
-              ──► clearCookie(accessToken, refreshToken)
-              ──► 200 OK
-```
+**Authenticated Request**
+
+| Step | Action |
+|------|--------|
+| 1 | Extract token from cookie or `Authorization` header |
+| 2 | Verify with `jwt.verify()` using `ACCESS_TOKEN_SECRET` |
+| 3 | Fetch user from DB, exclude `password` and `refreshToken` |
+| 4 | Attach to `req.user` — available in all downstream controllers |
+
+**Token Refresh**
+
+| Step | Action |
+|------|--------|
+| 1 | Extract refresh token from cookie or request body |
+| 2 | Verify signature with `REFRESH_TOKEN_SECRET` |
+| 3 | Compare against token stored in MongoDB (rotation check) |
+| 4 | Generate new access + refresh token pair |
+| 5 | Update MongoDB with new refresh token |
+| 6 | Set new cookies, return new tokens |
+
+**Logout**
+
+| Step | Action |
+|------|--------|
+| 1 | Remove refresh token from MongoDB via `$unset` |
+| 2 | Clear both cookies from browser |
+| 3 | Access token remains valid until expiry (stateless trade-off) |
 
 ### Database Schema Relationships
 
 ```
 User ──────────────────────────────────────┐
-│ _id, username, email, fullName           │
-│ avatar, coverImage (Cloudinary URLs)     │
-│ password (bcrypt), refreshToken          │
-│ watchHistory: [VideoId]                  │
+│ _id, username, email, fullName            │
+│ avatar, coverImage (Cloudinary URLs)      │
+│ password (bcrypt), refreshToken           │
+│ watchHistory: [VideoId]                   │
 └──────┬──────────────────────────────────-┘
        │
        │ 1:N                         M:N (via Subscription)
