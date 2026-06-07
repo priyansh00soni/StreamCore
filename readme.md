@@ -405,7 +405,7 @@ All responses follow this envelope:
 | `GET` | `/videos/:videoId` | Optional | - | Get video details. Increments views. Tracks watch history if authenticated. |
 | `PATCH` | `/videos/:videoId` | ✅ | `title, description` + `thumbnail` (file, optional) | Update video. Owner only. |
 | `DELETE` | `/videos/:videoId` | ✅ | - | Delete video + Cloudinary files. Owner only. |
-| `PATCH` | `/videos/toggle-publish/:videoId` | ✅ | : | Toggle public/private. Owner only. |
+| `PATCH` | `/videos/toggle-publish/:videoId` | ✅ | - | Toggle public/private. Owner only. |
 
 ---
 
@@ -447,7 +447,7 @@ All responses follow this envelope:
 |--------|----------|------|---------------|-------------|
 | `POST` | `/playlists` | ✅ | `name, description` | Create playlist |
 | `GET` | `/playlists/user/:userId` | ❌ | - | Get all playlists of a user |
-| `PATCH` | `/playlists/add/:playlistId/:videoId` | ✅ | : | Add video to playlist |
+| `PATCH` | `/playlists/add/:playlistId/:videoId` | ✅ | - | Add video to playlist |
 
 ---
 
