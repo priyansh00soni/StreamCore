@@ -384,15 +384,15 @@ All responses follow this envelope:
 |--------|----------|------|---------------|-------------|
 | `POST` | `/users/register` | ❌ | `fullName, email, username, password` + `avatar` (file) + `coverImage` (file, optional) | Register new user. Avatar required. |
 | `POST` | `/users/login` | ❌ | `username` or `email` + `password` | Login. Returns tokens in cookies + body. |
-| `POST` | `/users/logout` | ✅ | : | Clears cookies, revokes refresh token in DB. |
+| `POST` | `/users/logout` | ✅ | - | Clears cookies, revokes refresh token in DB. |
 | `POST` | `/users/refresh-token` | ❌ | `refreshToken` (cookie or body) | Get new access + refresh tokens. |
 | `PATCH` | `/users/change-password` | ✅ | `oldPassword, newPassword` | Change password. Validates strength. |
-| `GET` | `/users/current-user` | ✅ | : | Get logged-in user's full profile. |
+| `GET` | `/users/current-user` | ✅ | - | Get logged-in user's full profile. |
 | `PATCH` | `/users/update-account-details` | ✅ | `fullName, email` | Update name and email. |
 | `PATCH` | `/users/update-avatar` | ✅ | `avatar` (file) | Replace avatar. Old file deleted from Cloudinary. |
 | `PATCH` | `/users/update-cover-image` | ✅ | `coverImage` (file) | Replace cover image. |
-| `GET` | `/users/channel/:username` | ✅ | : | Get public channel profile with subscriber count + isSubscribed. |
-| `GET` | `/users/watch-history` | ✅ | : | Get watch history with full video + owner details. |
+| `GET` | `/users/channel/:username` | ✅ | - | Get public channel profile with subscriber count + isSubscribed. |
+| `GET` | `/users/watch-history` | ✅ | - | Get watch history with full video + owner details. |
 
 ---
 
@@ -402,9 +402,9 @@ All responses follow this envelope:
 |--------|----------|------|---------------|-------------|
 | `GET` | `/videos` | ❌ | `?query, page, limit, sortBy, sortType, userId` | Paginated feed. With query: text search. Without: personalized recommendations from watch history. |
 | `POST` | `/videos/publish` | ✅ | `title, description` + `videoFile` (file) + `thumbnail` (file) | Upload video. Auto-generates tags via Gemini. |
-| `GET` | `/videos/:videoId` | Optional | : | Get video details. Increments views. Tracks watch history if authenticated. |
+| `GET` | `/videos/:videoId` | Optional | - | Get video details. Increments views. Tracks watch history if authenticated. |
 | `PATCH` | `/videos/:videoId` | ✅ | `title, description` + `thumbnail` (file, optional) | Update video. Owner only. |
-| `DELETE` | `/videos/:videoId` | ✅ | : | Delete video + Cloudinary files. Owner only. |
+| `DELETE` | `/videos/:videoId` | ✅ | - | Delete video + Cloudinary files. Owner only. |
 | `PATCH` | `/videos/toggle-publish/:videoId` | ✅ | : | Toggle public/private. Owner only. |
 
 ---
@@ -416,7 +416,7 @@ All responses follow this envelope:
 | `GET` | `/comments/:videoId` | ❌ | `?page, limit` | Get paginated comments for a video. |
 | `POST` | `/comments/:videoId` | ✅ | `content` | Add comment. Passes AI moderation before save. |
 | `PATCH` | `/comments/c/:commentId` | ✅ | `content` | Edit comment. Owner only. |
-| `DELETE` | `/comments/c/:commentId` | ✅ | : | Delete comment. Owner only. |
+| `DELETE` | `/comments/c/:commentId` | ✅ | - | Delete comment. Owner only. |
 
 ---
 
@@ -446,7 +446,7 @@ All responses follow this envelope:
 | Method | Endpoint | Auth | Body / Params | Description |
 |--------|----------|------|---------------|-------------|
 | `POST` | `/playlists` | ✅ | `name, description` | Create playlist |
-| `GET` | `/playlists/user/:userId` | ❌ | : | Get all playlists of a user |
+| `GET` | `/playlists/user/:userId` | ❌ | - | Get all playlists of a user |
 | `PATCH` | `/playlists/add/:playlistId/:videoId` | ✅ | : | Add video to playlist |
 
 ---
