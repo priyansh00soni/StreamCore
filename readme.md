@@ -6,12 +6,13 @@
 <img src="https://img.shields.io/badge/Cloudinary-Media_CDN-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white" />
 <img src="https://img.shields.io/badge/Gemini_AI-Integrated-4285F4?style=for-the-badge&logo=google&logoColor=white" />
 <img src="https://img.shields.io/badge/JWT-Auth-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
+<img src="https://img.shields.io/badge/API-Live-brightgreen?style=for-the-badge&logo=render&logoColor=white" />
 
 # 🎬 StreamCore API
 
-### A production-grade YouTube-like backend : built from scratch with Node.js, MongoDB, and Gemini AI.
+### A production-grade YouTube-like backend — built from scratch with Node.js, MongoDB, and Gemini AI.
 
-[Features](#-features) · [Architecture](#-architecture) · [API Reference](#-api-reference) · [Quick Start](#-quick-start) · [Design Decisions](#-design-decisions)
+[Features](#-features) · [Architecture](#-architecture) · [API Reference](#-api-reference) · [Quick Start](#-quick-start) · [Design Decisions](#-design-decisions) · [Live API](https://stream-core.onrender.com/api/v1/healthcheck)
 
 </div>
 
@@ -19,16 +20,16 @@
 
 ## What Is This?
 
-StreamCore is a **fully-featured REST API** powering a video-sharing platform. It handles everything a modern video platform needs : user identity, media uploads, subscriptions, engagement (likes/comments), AI-assisted discovery, and creator analytics.
+StreamCore is a **fully-featured REST API** powering a video-sharing platform. It handles everything a modern video platform needs — user identity, media uploads, subscriptions, engagement (likes/comments), AI-assisted discovery, and creator analytics.
 
 This isn't a tutorial clone. It's built with production patterns:
 
 - **Dual-token JWT auth** with rotation + server-side revocation
-- **Cloudinary CDN** for media (images + videos) : zero binary data in MongoDB
+- **Cloudinary CDN** for media (images + videos) — zero binary data in MongoDB
 - **MongoDB Aggregation Pipelines** for complex relational queries without a SQL database
 - **Gemini AI** for comment moderation, semantic search expansion, and auto-SEO tagging
-- **Tiered rate limiting** : global, auth-specific, and AI-specific limits
-- **Content-based video recommendations** from watch history : no external ML service
+- **Tiered rate limiting** — global, auth-specific, and AI-specific limits
+- **Content-based video recommendations** from watch history — no external ML service
 
 ---
 
@@ -39,11 +40,11 @@ This isn't a tutorial clone. It's built with production patterns:
 | **Auth** | Register, Login, Logout, Refresh Token, Password Change |
 | **Users** | Profile management, Avatar/Cover upload, Watch History |
 | **Videos** | Upload, Publish/Unpublish toggle, Paginated feed, Recommendations |
-| **Engagement** | Like/Unlike videos, comments & tweets : polymorphic model |
+| **Engagement** | Like/Unlike videos, comments & tweets — polymorphic model |
 | **Comments** | CRUD with AI content moderation before save |
 | **Subscriptions** | Subscribe/Unsubscribe, Subscriber list, Subscribed channels |
 | **Playlists** | Create, manage, add/remove videos |
-| **Creator Dashboard** | Channel stats : total views, subscribers, videos, likes |
+| **Creator Dashboard** | Channel stats — total views, subscribers, videos, likes |
 | **AI Features** | Semantic search expansion, auto-tag generation, description generator |
 | **Search** | Tag-based + AI-expanded full-text search with watch history recommendations |
 
@@ -55,29 +56,29 @@ This isn't a tutorial clone. It's built with production patterns:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                          CLIENT                                 │
-│              (Browser / Mobile / Postman)                       │
+│                          CLIENT                                  │
+│              (Browser / Mobile / Postman)                        │
 └───────────────────────────┬─────────────────────────────────────┘
                             │ HTTPS
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      EXPRESS SERVER                             │
-│                                                                 │
+│                      EXPRESS SERVER                              │
+│                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                  MIDDLEWARE CHAIN                        │   │
+│  │                  MIDDLEWARE CHAIN                         │   │
 │  │  Rate Limiter → CORS → Body Parser → Cookie Parser       │   │
 │  └──────────────────────────────────────────────────────────┘   │
-│                            │                                    │
+│                            │                                     │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                    ROUTER LAYER                          │   │
+│  │                    ROUTER LAYER                           │   │
 │  │  /users  /videos  /comments  /likes  /subscriptions      │   │
-│  │  /playlists  /dashboard  /ai  /tweets  /healthcheck      │   │
+│  │  /playlists  /dashboard  /ai  /tweets  /healthcheck       │   │
 │  └──────────────────────────────────────────────────────────┘   │
-│                            │                                    │
-│  ┌──────────┐  ┌───────────┴──────────┐  ┌──────────────────┐   │
-│  │ verifyJWT│  │    CONTROLLERS       │  │  multer (upload) │   │
-│  │middleware│  │  Business Logic      │  │  middleware      │   │
-│  └──────────┘  └──────────┬───────────┘  └──────────────────┘   │
+│                            │                                     │
+│  ┌──────────┐  ┌───────────┴──────────┐  ┌──────────────────┐  │
+│  │  verifyJWT│  │    CONTROLLERS       │  │  multer (upload) │  │
+│  │middleware │  │  Business Logic      │  │  middleware       │  │
+│  └──────────┘  └──────────┬───────────┘  └──────────────────┘  │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
            ┌───────────────┼────────────────┐
@@ -156,10 +157,10 @@ LOGOUT
 
 ```
 User ──────────────────────────────────────┐
-│ _id, username, email, fullName           │
-│ avatar, coverImage (Cloudinary URLs)     │
-│ password (bcrypt), refreshToken          │
-│ watchHistory: [VideoId]                  │
+│ _id, username, email, fullName            │
+│ avatar, coverImage (Cloudinary URLs)      │
+│ password (bcrypt), refreshToken           │
+│ watchHistory: [VideoId]                   │
 └──────┬──────────────────────────────────-┘
        │
        │ 1:N                         M:N (via Subscription)
@@ -271,7 +272,7 @@ professional-project/
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/yourusername/streamcore-api.git
+git clone https://github.com/priyansh00soni/streamcore-api.git
 cd streamcore-api
 npm install
 ```
@@ -314,7 +315,7 @@ GEMINI_API_KEY=your_gemini_api_key
 > ```bash
 > node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 > ```
-> Run it twice : use one for ACCESS_TOKEN_SECRET, one for REFRESH_TOKEN_SECRET.
+> Run it twice — use one for ACCESS_TOKEN_SECRET, one for REFRESH_TOKEN_SECRET.
 
 ### 3. Run
 
@@ -339,7 +340,9 @@ curl http://localhost:8000/api/v1/healthcheck
 
 ## 📡 API Reference
 
-**Base URL:** `http://localhost:8000/api/v1`
+**Base URL:** `https://stream-core.onrender.com/api/v1`
+
+> Local development: `http://localhost:8000/api/v1`
 
 All responses follow this envelope:
 
@@ -353,49 +356,49 @@ All responses follow this envelope:
 
 ---
 
-### 🔐 Auth & Users : `/users`
+### 🔐 Auth & Users — `/users`
 
 | Method | Endpoint | Auth | Body / Params | Description |
 |--------|----------|------|---------------|-------------|
 | `POST` | `/users/register` | ❌ | `fullName, email, username, password` + `avatar` (file) + `coverImage` (file, optional) | Register new user. Avatar required. |
 | `POST` | `/users/login` | ❌ | `username` or `email` + `password` | Login. Returns tokens in cookies + body. |
-| `POST` | `/users/logout` | ✅ | : | Clears cookies, revokes refresh token in DB. |
+| `POST` | `/users/logout` | ✅ | — | Clears cookies, revokes refresh token in DB. |
 | `POST` | `/users/refresh-token` | ❌ | `refreshToken` (cookie or body) | Get new access + refresh tokens. |
 | `PATCH` | `/users/change-password` | ✅ | `oldPassword, newPassword` | Change password. Validates strength. |
-| `GET` | `/users/current-user` | ✅ | : | Get logged-in user's full profile. |
+| `GET` | `/users/current-user` | ✅ | — | Get logged-in user's full profile. |
 | `PATCH` | `/users/update-account-details` | ✅ | `fullName, email` | Update name and email. |
 | `PATCH` | `/users/update-avatar` | ✅ | `avatar` (file) | Replace avatar. Old file deleted from Cloudinary. |
 | `PATCH` | `/users/update-cover-image` | ✅ | `coverImage` (file) | Replace cover image. |
-| `GET` | `/users/channel/:username` | ✅ | : | Get public channel profile with subscriber count + isSubscribed. |
-| `GET` | `/users/watch-history` | ✅ | : | Get watch history with full video + owner details. |
+| `GET` | `/users/channel/:username` | ✅ | — | Get public channel profile with subscriber count + isSubscribed. |
+| `GET` | `/users/watch-history` | ✅ | — | Get watch history with full video + owner details. |
 
 ---
 
-### 🎥 Videos : `/videos`
+### 🎥 Videos — `/videos`
 
 | Method | Endpoint | Auth | Body / Params | Description |
 |--------|----------|------|---------------|-------------|
 | `GET` | `/videos` | ❌ | `?query, page, limit, sortBy, sortType, userId` | Paginated feed. With query: text search. Without: personalized recommendations from watch history. |
 | `POST` | `/videos/publish` | ✅ | `title, description` + `videoFile` (file) + `thumbnail` (file) | Upload video. Auto-generates tags via Gemini. |
-| `GET` | `/videos/:videoId` | Optional | : | Get video details. Increments views. Tracks watch history if authenticated. |
+| `GET` | `/videos/:videoId` | Optional | — | Get video details. Increments views. Tracks watch history if authenticated. |
 | `PATCH` | `/videos/:videoId` | ✅ | `title, description` + `thumbnail` (file, optional) | Update video. Owner only. |
-| `DELETE` | `/videos/:videoId` | ✅ | : | Delete video + Cloudinary files. Owner only. |
-| `PATCH` | `/videos/toggle-publish/:videoId` | ✅ | : | Toggle public/private. Owner only. |
+| `DELETE` | `/videos/:videoId` | ✅ | — | Delete video + Cloudinary files. Owner only. |
+| `PATCH` | `/videos/toggle-publish/:videoId` | ✅ | — | Toggle public/private. Owner only. |
 
 ---
 
-### 💬 Comments : `/comments`
+### 💬 Comments — `/comments`
 
 | Method | Endpoint | Auth | Body / Params | Description |
 |--------|----------|------|---------------|-------------|
 | `GET` | `/comments/:videoId` | ❌ | `?page, limit` | Get paginated comments for a video. |
 | `POST` | `/comments/:videoId` | ✅ | `content` | Add comment. Passes AI moderation before save. |
 | `PATCH` | `/comments/c/:commentId` | ✅ | `content` | Edit comment. Owner only. |
-| `DELETE` | `/comments/c/:commentId` | ✅ | : | Delete comment. Owner only. |
+| `DELETE` | `/comments/c/:commentId` | ✅ | — | Delete comment. Owner only. |
 
 ---
 
-### 👍 Likes : `/likes`
+### 👍 Likes — `/likes`
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
@@ -406,7 +409,7 @@ All responses follow this envelope:
 
 ---
 
-### 🔔 Subscriptions : `/subscriptions`
+### 🔔 Subscriptions — `/subscriptions`
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
@@ -416,17 +419,17 @@ All responses follow this envelope:
 
 ---
 
-### 📋 Playlists : `/playlists`
+### 📋 Playlists — `/playlists`
 
 | Method | Endpoint | Auth | Body / Params | Description |
 |--------|----------|------|---------------|-------------|
 | `POST` | `/playlists` | ✅ | `name, description` | Create playlist |
-| `GET` | `/playlists/user/:userId` | ❌ | : | Get all playlists of a user |
-| `PATCH` | `/playlists/add/:playlistId/:videoId` | ✅ | : | Add video to playlist |
+| `GET` | `/playlists/user/:userId` | ❌ | — | Get all playlists of a user |
+| `PATCH` | `/playlists/add/:playlistId/:videoId` | ✅ | — | Add video to playlist |
 
 ---
 
-### 📊 Dashboard : `/dashboard`
+### 📊 Dashboard — `/dashboard`
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
@@ -435,7 +438,7 @@ All responses follow this envelope:
 
 ---
 
-### 🤖 AI : `/ai`
+### 🤖 AI — `/ai`
 
 > Rate limited: **5 requests / minute**
 
@@ -455,35 +458,35 @@ All responses follow this envelope:
 
 ## 🧠 Design Decisions
 
-These are the "why" decisions behind this codebase : the kind of questions interviewers ask.
+These are the "why" decisions behind this codebase — the kind of questions interviewers ask.
 
 ### Why dual-token JWT (access + refresh)?
 
-Access tokens are **stateless** : any server instance verifies them without a DB call, enabling horizontal scaling. But stateless means they can't be revoked mid-life. The solution: short-lived access tokens (1 day) + long-lived refresh tokens (10 days) **stored in MongoDB**. The DB storage enables server-side revocation : logout deletes the refresh token. Stealing the access token only grants 1 day of access max. This is a deliberate hybrid: stateless performance + stateful revocation capability.
+Access tokens are **stateless** — any server instance verifies them without a DB call, enabling horizontal scaling. But stateless means they can't be revoked mid-life. The solution: short-lived access tokens (1 day) + long-lived refresh tokens (10 days) **stored in MongoDB**. The DB storage enables server-side revocation — logout deletes the refresh token. Stealing the access token only grants 1 day of access max. This is a deliberate hybrid: stateless performance + stateful revocation capability.
 
 ### Why store media URLs in MongoDB instead of files?
 
-MongoDB documents have a 16MB size limit. Binary files in documents kill query performance. The right pattern: store files on Cloudinary (a CDN built for media), store only the URL string in MongoDB. The CDN handles delivery, caching, and global edge distribution : things MongoDB is not designed for.
+MongoDB documents have a 16MB size limit. Binary files in documents kill query performance. The right pattern: store files on Cloudinary (a CDN built for media), store only the URL string in MongoDB. The CDN handles delivery, caching, and global edge distribution — things MongoDB is not designed for.
 
 ### Why MongoDB Aggregation instead of `populate()`?
 
-`populate()` makes separate queries per document (N+1 problem). Aggregation pipelines execute entirely inside MongoDB : joins (`$lookup`), filtering (`$match`), computed fields (`$addFields`), and pagination (`$facet`) all in a **single DB round trip**. For `getChannelProfile`, this means one pipeline that joins subscribers, computes count, and checks if the requesting user is subscribed : instead of 3+ sequential queries.
+`populate()` makes separate queries per document (N+1 problem). Aggregation pipelines execute entirely inside MongoDB — joins (`$lookup`), filtering (`$match`), computed fields (`$addFields`), and pagination (`$facet`) all in a **single DB round trip**. For `getChannelProfile`, this means one pipeline that joins subscribers, computes count, and checks if the requesting user is subscribed — instead of 3+ sequential queries.
 
 ### Why is the Subscription model self-referential?
 
-Both `subscriber` and `channel` reference the `User` collection : because YouTube users are simultaneously viewers and creators. The `Subscription` collection is a junction table modeling a many-to-many relationship on a single collection. This avoids unbounded arrays inside User documents (a popular channel with 10M subscribers would otherwise have a 10M-element array in a single document).
+Both `subscriber` and `channel` reference the `User` collection — because YouTube users are simultaneously viewers and creators. The `Subscription` collection is a junction table modeling a many-to-many relationship on a single collection. This avoids unbounded arrays inside User documents (a popular channel with 10M subscribers would otherwise have a 10M-element array in a single document).
 
 ### Why is the Like model polymorphic?
 
-One `likes` collection handles likes on videos, comments, and tweets using optional foreign key fields. Alternative: three separate collections (`VideoLike`, `CommentLike`, `TweetLike`). The polymorphic approach reduces schema proliferation. The tradeoff: no DB-level constraint enforcing "exactly one content type per like document" : that's enforced by application logic.
+One `likes` collection handles likes on videos, comments, and tweets using optional foreign key fields. Alternative: three separate collections (`VideoLike`, `CommentLike`, `TweetLike`). The polymorphic approach reduces schema proliferation. The tradeoff: no DB-level constraint enforcing "exactly one content type per like document" — that's enforced by application logic.
 
 ### Why AI moderation before save (not async)?
 
-The current implementation is synchronous : it ensures no toxic comment ever reaches the database. The tradeoff is latency and a Gemini API dependency. A production system would use async moderation: save the comment immediately with `status: 'pending'`, moderate asynchronously via a queue, then auto-delete if it fails. This was a conscious scope decision for this project.
+The current implementation is synchronous — it ensures no toxic comment ever reaches the database. The tradeoff is latency and a Gemini API dependency. A production system would use async moderation: save the comment immediately with `status: 'pending'`, moderate asynchronously via a queue, then auto-delete if it fails. This was a conscious scope decision for this project.
 
 ### Why `asyncHandler`?
 
-Express doesn't catch errors thrown inside async route handlers by default (Express 4). `asyncHandler` is a higher-order function that wraps handlers in `Promise.resolve().catch(next)` : forwarding any rejection to the global error middleware. This eliminates try/catch boilerplate in every controller. Note: Express 5 (which this project uses) handles this natively, but `asyncHandler` is kept for explicit documentation and Express 4 compatibility.
+Express doesn't catch errors thrown inside async route handlers by default (Express 4). `asyncHandler` is a higher-order function that wraps handlers in `Promise.resolve().catch(next)` — forwarding any rejection to the global error middleware. This eliminates try/catch boilerplate in every controller. Note: Express 5 (which this project uses) handles this natively, but `asyncHandler` is kept for explicit documentation and Express 4 compatibility.
 
 ---
 
@@ -491,12 +494,12 @@ Express doesn't catch errors thrown inside async route handlers by default (Expr
 
 | Measure | Implementation |
 |---------|---------------|
-| Password hashing | bcrypt with 10 salt rounds: one-way, rainbow-table resistant |
-| Token storage | httpOnly + Secure cookies: inaccessible to JavaScript |
+| Password hashing | bcrypt with 10 salt rounds — one-way, rainbow-table resistant |
+| Token storage | httpOnly + Secure cookies — inaccessible to JavaScript |
 | Token rotation | Each refresh generates a new refresh token, invalidating the old |
 | Rate limiting | 3-tier: global (200/15min), auth (10/1min), AI (5/1min) |
 | CORS | Configurable origin whitelist via `CORS_ORIGIN` env variable |
-| Authorization | Owner checks at DB level: `findOne({ _id: id, owner: req.user._id })` |
+| Authorization | Owner checks at DB level — `findOne({ _id: id, owner: req.user._id })` |
 | Secret exclusion | `select('-password -refreshToken')` on all user queries |
 
 ---
@@ -517,13 +520,32 @@ Express doesn't catch errors thrown inside async route handlers by default (Expr
 
 ---
 
+## 🚀 What I'd Add Before Production
+
+These are known improvements for 1M+ user scale:
+
+- [ ] **Video transcoding pipeline** — BullMQ + FFmpeg workers for 1080p/720p/480p HLS output
+- [ ] **Redis caching** — Cache channel profiles, subscriber counts, trending videos
+- [ ] **Async comment moderation** — Queue-based moderation, don't block comment save
+- [ ] **Distributed rate limiting** — Redis store for `express-rate-limit` (current: in-memory, per-instance)
+- [ ] **Full-text search index** — MongoDB text index on `title` and `tags` fields
+- [ ] **Structured logging** — Winston/Pino with log levels + request IDs (replace console.log)
+- [ ] **Test suite** — Jest + Supertest integration tests for all API routes
+- [ ] **Docker + docker-compose** — Containerized local dev with MongoDB + Redis
+- [ ] **CI/CD pipeline** — GitHub Actions: lint → test → build → deploy on push to main
+- [ ] **API documentation** — Swagger/OpenAPI spec auto-generated from routes
+
+---
+
 ## 📬 Postman Collection
 
 Import the collection into Postman to test all 30+ endpoints with pre-configured variables and example payloads.
 
-> Coming soon : export from Postman and commit as `StreamCore.postman_collection.json`
+**[Open Postman Workspace](https://www.postman.com/priyansh00soni-6158823/workspace/stream-core)**
 
-**Quick manual test : register a user:**
+Set the `BASE_URL` environment variable to `https://stream-core.onrender.com/api/v1` for production or `http://localhost:8000/api/v1` for local testing.
+
+**Quick manual test — register a user:**
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/users/register \
@@ -545,6 +567,6 @@ Built as a production-grade backend project demonstrating real-world patterns in
 
 <div align="center">
 
-If this helped you, drop a ⭐ on the repo.
+If this helped you — drop a ⭐ on the repo.
 
 </div>
