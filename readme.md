@@ -10,7 +10,7 @@
 
 # 🎬 StreamCore API
 
-### A production-grade YouTube-like backend — built from scratch with Node.js, MongoDB, and Gemini AI.
+### A production-grade YouTube-like backend, built from scratch with Node.js, MongoDB, and Gemini AI.
 
 [Features](#-features) · [Architecture](#-architecture) · [API Reference](#-api-reference) · [Quick Start](#-quick-start) · [Design Decisions](#-design-decisions) · [Live API](https://stream-core.onrender.com/api/v1/healthcheck)
 
@@ -56,29 +56,29 @@ This isn't a tutorial clone. It's built with production patterns:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                          CLIENT                                  │
-│              (Browser / Mobile / Postman)                        │
+│                          CLIENT                                 │
+│              (Browser / Mobile / Postman)                       │
 └───────────────────────────┬─────────────────────────────────────┘
                             │ HTTPS
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      EXPRESS SERVER                              │
-│                                                                  │
+│                      EXPRESS SERVER                             │
+│                                                                 │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                  MIDDLEWARE CHAIN                         │   │
+│  │                  MIDDLEWARE CHAIN                        │   │
 │  │  Rate Limiter → CORS → Body Parser → Cookie Parser       │   │
 │  └──────────────────────────────────────────────────────────┘   │
-│                            │                                     │
+│                            │                                    │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                    ROUTER LAYER                           │   │
+│  │                    ROUTER LAYER                          │   │
 │  │  /users  /videos  /comments  /likes  /subscriptions      │   │
-│  │  /playlists  /dashboard  /ai  /tweets  /healthcheck       │   │
+│  │  /playlists  /dashboard  /ai  /tweets  /healthcheck      │   │
 │  └──────────────────────────────────────────────────────────┘   │
-│                            │                                     │
-│  ┌──────────┐  ┌───────────┴──────────┐  ┌──────────────────┐  │
-│  │  verifyJWT│  │    CONTROLLERS       │  │  multer (upload) │  │
-│  │middleware │  │  Business Logic      │  │  middleware       │  │
-│  └──────────┘  └──────────┬───────────┘  └──────────────────┘  │
+│                            │                                    │
+│  ┌──────────┐  ┌───────────┴──────────┐  ┌──────────────────┐   │
+│  │ verifyJWT│  │    CONTROLLERS       │  │  multer (upload) │   │
+│  │middleware│  │  Business Logic      │  │  middleware      │   │
+│  └──────────┘  └──────────┬───────────┘  └──────────────────┘   │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
            ┌───────────────┼────────────────┐
@@ -110,9 +110,9 @@ Incoming Request
       └─► [5] cookieParser()          (parses req.cookies)
                     │
          ┌──────────┴──────────┐
-         │  Route-level MW      │
-         │  verifyJWT           │  → decodes JWT → attaches req.user
-         │  multer.upload()     │  → saves file to /public/temp
+         │  Route-level MW     │
+         │  verifyJWT          │  → decodes JWT → attaches req.user
+         │  multer.upload()    │  → saves file to /public/temp
          └──────────┬──────────┘
                     │
              Controller
@@ -157,10 +157,10 @@ LOGOUT
 
 ```
 User ──────────────────────────────────────┐
-│ _id, username, email, fullName            │
-│ avatar, coverImage (Cloudinary URLs)      │
-│ password (bcrypt), refreshToken           │
-│ watchHistory: [VideoId]                   │
+│ _id, username, email, fullName           │
+│ avatar, coverImage (Cloudinary URLs)     │
+│ password (bcrypt), refreshToken          │
+│ watchHistory: [VideoId]                  │
 └──────┬──────────────────────────────────-┘
        │
        │ 1:N                         M:N (via Subscription)
