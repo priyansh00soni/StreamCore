@@ -8,7 +8,7 @@
 <img src="https://img.shields.io/badge/JWT-Auth-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
 <img src="https://img.shields.io/badge/API-Live-brightgreen?style=for-the-badge&logo=render&logoColor=white" />
 
-# 🎬 StreamCore API
+# 🎬 StreamCore API 
 
 ### A production-grade YouTube-like backend, built from scratch with Node.js, MongoDB, and Gemini AI.
 
